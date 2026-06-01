@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import pickle
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -14,15 +16,23 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PROCESSED_DATA_DIR = PROJECT_ROOT / "data" / "processed"
 REPOSITORIES_PATH = PROCESSED_DATA_DIR / "repositories_clean.csv"
 EMBEDDINGS_PATH = PROCESSED_DATA_DIR / "repository_embeddings.npy"
+NODE2VEC_EMBEDDINGS_PATH = PROCESSED_DATA_DIR / "node2vec_embeddings.pkl"
 
-RESULT_COLUMNS = [
+BASE_RESULT_COLUMNS = [
     "Name",
     "Description",
     "URL",
     "Stars",
     "Forks",
     "Issues",
+]
+SEMANTIC_RESULT_COLUMNS = [
+    *BASE_RESULT_COLUMNS,
     "semantic_similarity",
+]
+GRAPH_RESULT_COLUMNS = [
+    *BASE_RESULT_COLUMNS,
+    "graph_similarity",
 ]
 
 
@@ -48,6 +58,41 @@ def load_embeddings(path: Path = EMBEDDINGS_PATH) -> np.ndarray:
     return np.load(path)
 
 
+def normalize_node2vec_embeddings(raw_embeddings: Any) -> dict[str, np.ndarray]:
+    """Normalize supported node2vec embedding formats to a node-to-vector mapping."""
+    if hasattr(raw_embeddings, "wv"):
+        raw_embeddings = raw_embeddings.wv
+
+    if hasattr(raw_embeddings, "key_to_index"):
+        return {
+            str(node_name): np.asarray(raw_embeddings[node_name], dtype=float)
+            for node_name in raw_embeddings.key_to_index
+        }
+
+    if isinstance(raw_embeddings, dict):
+        return {
+            str(node_name): np.asarray(vector, dtype=float)
+            for node_name, vector in raw_embeddings.items()
+        }
+
+    raise TypeError(
+        "Unsupported node2vec embeddings format. Expected a dict, gensim KeyedVectors, "
+        "or a gensim Word2Vec model."
+    )
+
+
+def load_node2vec_embeddings(path: Path = NODE2VEC_EMBEDDINGS_PATH) -> dict[str, np.ndarray]:
+    """Load node2vec repository embeddings from disk."""
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Node2Vec embeddings file not found: {path}. "
+            "Run python src/node2vec_embeddings.py first."
+        )
+
+    with path.open("rb") as file:
+        return normalize_node2vec_embeddings(pickle.load(file))
+
+
 def find_repository_index(repositories: pd.DataFrame, repo_name: str) -> int:
     """Find a repository row by exact name, with a case-insensitive fallback."""
     exact_matches = repositories.index[repositories["Name"] == repo_name].tolist()
@@ -63,23 +108,39 @@ def find_repository_index(repositories: pd.DataFrame, repo_name: str) -> int:
     raise ValueError(f"Repository not found: {repo_name}")
 
 
-def validate_inputs(repositories: pd.DataFrame, embeddings: np.ndarray) -> None:
-    """Validate that repository metadata and embeddings line up."""
+def validate_repository_columns(repositories: pd.DataFrame) -> None:
+    """Validate repository metadata columns needed in recommendation results."""
     if "Name" not in repositories.columns:
         raise ValueError("Processed repository dataset is missing the Name column.")
 
-    missing_result_columns = [
-        column for column in RESULT_COLUMNS if column != "semantic_similarity" and column not in repositories.columns
-    ]
+    missing_result_columns = [column for column in BASE_RESULT_COLUMNS if column not in repositories.columns]
     if missing_result_columns:
         missing = ", ".join(missing_result_columns)
         raise ValueError(f"Processed repository dataset is missing required columns: {missing}")
+
+
+def validate_semantic_inputs(repositories: pd.DataFrame, embeddings: np.ndarray) -> None:
+    """Validate that repository metadata and semantic embeddings line up."""
+    validate_repository_columns(repositories)
 
     if len(repositories) != len(embeddings):
         raise ValueError(
             "Repository metadata and embeddings have different row counts: "
             f"{len(repositories)} repositories vs {len(embeddings)} embeddings."
         )
+
+
+def find_embedding_key(node_embeddings: dict[str, np.ndarray], repo_name: str) -> str | None:
+    """Find the matching embedding key for a repository name."""
+    if repo_name in node_embeddings:
+        return repo_name
+
+    normalized_repo_name = repo_name.casefold()
+    for embedding_key in node_embeddings:
+        if embedding_key.casefold() == normalized_repo_name:
+            return embedding_key
+
+    return None
 
 
 def recommend_semantic(repo_name: str, top_k: int = 10) -> pd.DataFrame:
@@ -89,7 +150,7 @@ def recommend_semantic(repo_name: str, top_k: int = 10) -> pd.DataFrame:
 
     repositories = load_repositories()
     embeddings = load_embeddings()
-    validate_inputs(repositories, embeddings)
+    validate_semantic_inputs(repositories, embeddings)
 
     selected_index = find_repository_index(repositories, repo_name)
     selected_embedding = embeddings[selected_index].reshape(1, -1)
@@ -101,32 +162,84 @@ def recommend_semantic(repo_name: str, top_k: int = 10) -> pd.DataFrame:
 
     recommendations = repositories.iloc[top_indices].copy()
     recommendations["semantic_similarity"] = similarities[top_indices]
-    return recommendations.loc[:, RESULT_COLUMNS].reset_index(drop=True)
+    return recommendations.loc[:, SEMANTIC_RESULT_COLUMNS].reset_index(drop=True)
+
+
+def recommend_graph(repo_name: str, top_k: int = 10) -> pd.DataFrame:
+    """Return the top-K graph-similar repositories using Node2Vec embeddings."""
+    if top_k <= 0:
+        raise ValueError("top_k must be greater than 0.")
+
+    repositories = load_repositories()
+    node_embeddings = load_node2vec_embeddings()
+    validate_repository_columns(repositories)
+
+    selected_index = find_repository_index(repositories, repo_name)
+    selected_repo_name = str(repositories.iloc[selected_index]["Name"])
+    selected_embedding_key = find_embedding_key(node_embeddings, selected_repo_name)
+    if selected_embedding_key is None:
+        raise ValueError(f"Repository missing from graph embeddings: {selected_repo_name}")
+
+    selected_embedding = node_embeddings[selected_embedding_key].reshape(1, -1)
+    scored_indices: list[tuple[int, float]] = []
+
+    for repository_index, row in repositories.iterrows():
+        if repository_index == selected_index:
+            continue
+
+        candidate_name = str(row["Name"])
+        candidate_embedding_key = find_embedding_key(node_embeddings, candidate_name)
+        if candidate_embedding_key is None:
+            continue
+
+        candidate_embedding = node_embeddings[candidate_embedding_key].reshape(1, -1)
+        similarity = float(cosine_similarity(selected_embedding, candidate_embedding)[0, 0])
+        scored_indices.append((repository_index, similarity))
+
+    scored_indices.sort(key=lambda item: item[1], reverse=True)
+    top_scored_indices = scored_indices[:top_k]
+
+    recommendations = repositories.iloc[[index for index, _ in top_scored_indices]].copy()
+    recommendations["graph_similarity"] = [similarity for _, similarity in top_scored_indices]
+    return recommendations.loc[:, GRAPH_RESULT_COLUMNS].reset_index(drop=True)
 
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description="Recommend repositories with semantic similarity.")
+    parser = argparse.ArgumentParser(description="Recommend GitHub repositories.")
     parser.add_argument("--repo", required=True, help="Repository name to use as the recommendation seed.")
     parser.add_argument("--top_k", type=int, default=10, help="Number of recommendations to return.")
+    parser.add_argument(
+        "--method",
+        choices=["semantic", "graph"],
+        default="semantic",
+        help="Recommendation method to use.",
+    )
     return parser.parse_args()
 
 
 def print_recommendations(recommendations: pd.DataFrame) -> None:
     """Print recommendations as a readable table."""
     table = recommendations.copy()
-    table["semantic_similarity"] = table["semantic_similarity"].map(lambda value: f"{value:.4f}")
+
+    for column in ["semantic_similarity", "graph_similarity"]:
+        if column in table.columns:
+            table[column] = table[column].map(lambda value: f"{value:.4f}")
+
     print(table.to_string(index=False))
 
 
 def main() -> None:
-    """Run the semantic recommender from the command line."""
+    """Run the selected recommender from the command line."""
     args = parse_args()
 
     try:
-        recommendations = recommend_semantic(args.repo, args.top_k)
+        if args.method == "semantic":
+            recommendations = recommend_semantic(args.repo, args.top_k)
+        else:
+            recommendations = recommend_graph(args.repo, args.top_k)
     except Exception as exc:
-        print("Failed to generate semantic recommendations.")
+        print(f"Failed to generate {args.method} recommendations.")
         print(f"Error: {exc}")
         raise SystemExit(1) from exc
 
