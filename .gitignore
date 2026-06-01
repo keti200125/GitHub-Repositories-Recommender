@@ -1,6 +1,9 @@
 venv/
 __pycache__/
 .DS_Store
+# Local credentials and tokens must stay outside Git.
+config/
+.env
 data/raw/*
 data/processed/*
 !data/raw/.gitkeep
@@ -9,4 +12,4 @@ data/processed/*
 *.npy
 *.npz
 *.csv
-
+*.json

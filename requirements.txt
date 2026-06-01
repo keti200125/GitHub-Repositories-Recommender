@@ -7,4 +7,5 @@ node2vec
 streamlit
 matplotlib
 plotly
-
+kagglehub==0.4.3
+python-dotenv
