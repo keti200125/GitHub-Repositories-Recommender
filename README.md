@@ -1,8 +1,8 @@
-# GitHub Repositories Recommendation
+# GitHub Repositories Recommender
 
 A graph-based GitHub repository recommendation system that will use repository metadata, embeddings, and graph relationships to suggest relevant repositories.
 
-## Planned Technologies
+## Technologies
 
 - Python
 - pandas

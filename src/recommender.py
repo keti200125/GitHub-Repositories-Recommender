@@ -1,4 +1,4 @@
-"""Semantic repository recommendations based on description embeddings."""
+"""Repository recommendations using semantic, graph, and hybrid scoring."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import MinMaxScaler
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -33,6 +34,13 @@ SEMANTIC_RESULT_COLUMNS = [
 GRAPH_RESULT_COLUMNS = [
     *BASE_RESULT_COLUMNS,
     "graph_similarity",
+]
+HYBRID_RESULT_COLUMNS = [
+    *BASE_RESULT_COLUMNS,
+    "semantic_similarity",
+    "graph_similarity",
+    "popularity_score",
+    "final_score",
 ]
 
 
@@ -130,6 +138,21 @@ def validate_semantic_inputs(repositories: pd.DataFrame, embeddings: np.ndarray)
         )
 
 
+def compute_popularity_scores(repositories: pd.DataFrame) -> np.ndarray:
+    """Compute normalized popularity from Stars, Forks, and Issues."""
+    validate_repository_columns(repositories)
+
+    popularity_columns = ["Stars", "Forks", "Issues"]
+    popularity_values = repositories.loc[:, popularity_columns].apply(pd.to_numeric, errors="coerce").fillna(0)
+    normalized_values = MinMaxScaler().fit_transform(popularity_values)
+
+    return (
+        0.5 * normalized_values[:, 0]
+        + 0.3 * normalized_values[:, 1]
+        + 0.2 * normalized_values[:, 2]
+    )
+
+
 def find_embedding_key(node_embeddings: dict[str, np.ndarray], repo_name: str) -> str | None:
     """Find the matching embedding key for a repository name."""
     if repo_name in node_embeddings:
@@ -204,6 +227,67 @@ def recommend_graph(repo_name: str, top_k: int = 10) -> pd.DataFrame:
     return recommendations.loc[:, GRAPH_RESULT_COLUMNS].reset_index(drop=True)
 
 
+def recommend_hybrid(repo_name: str, top_k: int = 10) -> pd.DataFrame:
+    """Return the top-K repositories using semantic, graph, and popularity scores."""
+    if top_k <= 0:
+        raise ValueError("top_k must be greater than 0.")
+
+    repositories = load_repositories()
+    embeddings = load_embeddings()
+    node_embeddings = load_node2vec_embeddings()
+    validate_semantic_inputs(repositories, embeddings)
+
+    selected_index = find_repository_index(repositories, repo_name)
+    selected_repo_name = str(repositories.iloc[selected_index]["Name"])
+    selected_embedding_key = find_embedding_key(node_embeddings, selected_repo_name)
+    if selected_embedding_key is None:
+        raise ValueError(f"Repository missing from graph embeddings: {selected_repo_name}")
+
+    semantic_similarities = cosine_similarity(embeddings[selected_index].reshape(1, -1), embeddings)[0]
+    selected_graph_embedding = node_embeddings[selected_embedding_key].reshape(1, -1)
+    popularity_scores = compute_popularity_scores(repositories)
+
+    scored_indices: list[tuple[int, float, float, float, float]] = []
+    for repository_index, row in repositories.iterrows():
+        if repository_index == selected_index:
+            continue
+
+        candidate_name = str(row["Name"])
+        candidate_embedding_key = find_embedding_key(node_embeddings, candidate_name)
+        if candidate_embedding_key is None:
+            continue
+
+        candidate_graph_embedding = node_embeddings[candidate_embedding_key].reshape(1, -1)
+        graph_similarity = float(cosine_similarity(selected_graph_embedding, candidate_graph_embedding)[0, 0])
+        semantic_similarity = float(semantic_similarities[repository_index])
+        popularity_score = float(popularity_scores[repository_index])
+        final_score = (
+            0.45 * semantic_similarity
+            + 0.35 * graph_similarity
+            + 0.20 * popularity_score
+        )
+        scored_indices.append(
+            (
+                repository_index,
+                semantic_similarity,
+                graph_similarity,
+                popularity_score,
+                final_score,
+            )
+        )
+
+    scored_indices.sort(key=lambda item: item[4], reverse=True)
+    top_scored_indices = scored_indices[:top_k]
+
+    recommendations = repositories.iloc[[index for index, *_ in top_scored_indices]].copy()
+    recommendations["semantic_similarity"] = [semantic for _, semantic, _, _, _ in top_scored_indices]
+    recommendations["graph_similarity"] = [graph for _, _, graph, _, _ in top_scored_indices]
+    recommendations["popularity_score"] = [popularity for _, _, _, popularity, _ in top_scored_indices]
+    recommendations["final_score"] = [final for _, _, _, _, final in top_scored_indices]
+
+    return recommendations.loc[:, HYBRID_RESULT_COLUMNS].reset_index(drop=True)
+
+
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Recommend GitHub repositories.")
@@ -211,7 +295,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--top_k", type=int, default=10, help="Number of recommendations to return.")
     parser.add_argument(
         "--method",
-        choices=["semantic", "graph"],
+        choices=["semantic", "graph", "hybrid"],
         default="semantic",
         help="Recommendation method to use.",
     )
@@ -222,7 +306,13 @@ def print_recommendations(recommendations: pd.DataFrame) -> None:
     """Print recommendations as a readable table."""
     table = recommendations.copy()
 
-    for column in ["semantic_similarity", "graph_similarity"]:
+    score_columns = [
+        "semantic_similarity",
+        "graph_similarity",
+        "popularity_score",
+        "final_score",
+    ]
+    for column in score_columns:
         if column in table.columns:
             table[column] = table[column].map(lambda value: f"{value:.4f}")
 
@@ -236,8 +326,10 @@ def main() -> None:
     try:
         if args.method == "semantic":
             recommendations = recommend_semantic(args.repo, args.top_k)
-        else:
+        elif args.method == "graph":
             recommendations = recommend_graph(args.repo, args.top_k)
+        else:
+            recommendations = recommend_hybrid(args.repo, args.top_k)
     except Exception as exc:
         print(f"Failed to generate {args.method} recommendations.")
         print(f"Error: {exc}")
