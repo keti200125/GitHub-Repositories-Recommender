@@ -19,6 +19,7 @@ REPOSITORIES_PATH = PROJECT_ROOT / "data" / "processed" / "repositories_clean.cs
 OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 OLLAMA_GENERATE_URL = "http://localhost:11434/api/generate"
 DEFAULT_MODEL = "mistral"
+TOP_OLLAMA_RECOMMENDATIONS = 5
 PROFILE_COLUMNS = ["Name", "Description", "Stars", "Forks"]
 
 
@@ -212,25 +213,76 @@ def save_text(text: str, prefix: str, repo_names: list[str], output_dir: Path = 
     return output_path
 
 
-def remove_selected_repositories_from_answer(
+def strip_answer_line_prefix(line: str) -> str:
+    """Remove common list markers from one Ollama answer line."""
+    cleaned_line = line.strip()
+    cleaned_line = re.sub(r"^[-*]\s+", "", cleaned_line)
+    cleaned_line = re.sub(r"^\d+\s*[).:-]\s*", "", cleaned_line)
+    cleaned_line = re.sub(r"^(repository\s+name|name)\s*:\s*", "", cleaned_line, flags=re.IGNORECASE)
+    return cleaned_line.strip()
+
+
+def line_starts_with_repository_name(line: str, repository_name: str) -> bool:
+    """Check whether an answer line starts with a repository name."""
+    cleaned_line = re.sub(r"[*_`]", "", strip_answer_line_prefix(line)).strip()
+    normalized_line = normalized_name(cleaned_line)
+    normalized_repository_name = normalized_name(repository_name)
+
+    if not normalized_line.startswith(normalized_repository_name):
+        return False
+
+    remaining_text = normalized_line[len(normalized_repository_name) :]
+    return not remaining_text or remaining_text[0].isspace() or remaining_text[0] in "-:.,()[]"
+
+
+def find_answer_repository_name(line: str, repository_names: list[str]) -> str | None:
+    """Find the candidate repository name referenced by one answer line."""
+    for repository_name in sorted(repository_names, key=len, reverse=True):
+        if line_starts_with_repository_name(line, repository_name):
+            return repository_name
+
+    return None
+
+
+def filter_ollama_answer(
     answer: str,
     selected_repo_names: list[str],
+    candidate_repo_names: list[str],
+    top_k: int = TOP_OLLAMA_RECOMMENDATIONS,
 ) -> tuple[str, list[str]]:
-    """Remove answer lines that contain any selected repository name."""
+    """Keep only valid candidate recommendations and enforce the requested Top-K size."""
     selected_names = {normalized_name(name): name for name in selected_repo_names}
     removed_names = set()
-    kept_lines = []
+    kept_recommendations = []
+    seen_candidates = set()
 
     for line in answer.splitlines():
+        if not line.strip():
+            continue
+
         normalized_line = normalized_name(line)
         matched_names = [display_name for name, display_name in selected_names.items() if name in normalized_line]
         if matched_names:
             removed_names.update(matched_names)
             continue
 
-        kept_lines.append(line)
+        candidate_name = find_answer_repository_name(line, candidate_repo_names)
+        if candidate_name is None:
+            continue
 
-    cleaned_answer = "\n".join(kept_lines).strip()
+        normalized_candidate_name = normalized_name(candidate_name)
+        if normalized_candidate_name in seen_candidates:
+            continue
+
+        kept_recommendations.append(strip_answer_line_prefix(line))
+        seen_candidates.add(normalized_candidate_name)
+
+        if len(kept_recommendations) == top_k:
+            break
+
+    cleaned_answer = "\n".join(
+        f"{index}. {line}" for index, line in enumerate(kept_recommendations, start=1)
+    ).strip()
     return cleaned_answer, sorted(removed_names, key=normalized_name)
 
 
@@ -247,7 +299,8 @@ def run_ollama_baseline(
 
     prompt_path = save_text(prompt, "ollama_prompt", canonical_names)
     raw_answer = call_ollama(prompt, model)
-    answer, removed_names = remove_selected_repositories_from_answer(raw_answer, canonical_names)
+    candidate_names = candidate_repositories["Name"].astype(str).tolist()
+    answer, removed_names = filter_ollama_answer(raw_answer, canonical_names, candidate_names)
     answer_path = save_text(answer, "ollama_answer", canonical_names)
 
     return OllamaBaselineResult(
