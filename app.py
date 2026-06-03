@@ -8,6 +8,15 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from src.evaluate_methods import (
+    EVALUATION_COLUMNS,
+    OUTPUT_PATH as EVALUATION_OUTPUT_PATH,
+    SCORE_COLUMNS as EVALUATION_SCORE_COLUMNS,
+    TEST_REPOSITORIES,
+    TOP_K as EVALUATION_TOP_K,
+    evaluate_methods,
+    save_evaluation_results,
+)
 from src.recommender import recommend_graph, recommend_hybrid, recommend_semantic
 from src.ollama_baseline import (
     DEFAULT_MODEL as OLLAMA_DEFAULT_MODEL,
@@ -147,6 +156,68 @@ def get_ollama_baseline(selected_repositories: tuple[str, ...]):
     )
 
 
+@st.cache_data(show_spinner=False)
+def load_saved_evaluation_results(path: Path = EVALUATION_OUTPUT_PATH) -> pd.DataFrame:
+    """Load saved method evaluation results if they exist."""
+    if not path.exists():
+        return pd.DataFrame(columns=EVALUATION_COLUMNS)
+
+    return pd.read_csv(path)
+
+
+def run_method_evaluation() -> tuple[pd.DataFrame, str]:
+    """Run method evaluation and save the latest CSV output."""
+    results = evaluate_methods()
+    output_path = save_evaluation_results(results)
+    load_saved_evaluation_results.clear()
+    return results, output_path.relative_to(PROJECT_ROOT).as_posix()
+
+
+def format_evaluation_results(results: pd.DataFrame) -> pd.DataFrame:
+    """Round evaluation scores for display."""
+    display_table = results.copy()
+    for column in EVALUATION_SCORE_COLUMNS:
+        if column in display_table.columns:
+            display_table[column] = pd.to_numeric(display_table[column], errors="coerce").round(4)
+
+    return display_table
+
+
+def render_evaluation_section() -> None:
+    """Render evaluation results for the three recommendation methods."""
+    st.subheader("Evaluation Results")
+
+    summary_columns = st.columns(3)
+    summary_columns[0].metric("Test repositories", len(TEST_REPOSITORIES))
+    summary_columns[1].metric("Methods", 3)
+    summary_columns[2].metric("Top-K", EVALUATION_TOP_K)
+
+    if st.button("Run Evaluation", type="secondary"):
+        try:
+            with st.spinner("Evaluating recommendation methods..."):
+                results, output_path = run_method_evaluation()
+        except Exception as exc:
+            st.error(str(exc))
+            return
+
+        st.session_state.evaluation_results = results
+        st.session_state.evaluation_output_path = output_path
+
+    results = st.session_state.get("evaluation_results")
+    output_path = st.session_state.get("evaluation_output_path", "outputs/evaluation_results.csv")
+    if results is None:
+        results = load_saved_evaluation_results()
+
+    if results.empty:
+        st.info("Run evaluation to generate results.")
+        return
+
+    counts = results.groupby("method").size().reset_index(name="results")
+    st.dataframe(counts, use_container_width=True, hide_index=True)
+    st.dataframe(format_evaluation_results(results), use_container_width=True, hide_index=True)
+    st.caption(f"Saved to {output_path}")
+
+
 def main() -> None:
     """Render the Streamlit demo."""
     st.set_page_config(page_title="GitHub Repositories Recommender", layout="wide")
@@ -182,56 +253,56 @@ def main() -> None:
     else:
         st.info("Select at least one repository.")
 
-    if not 1 <= len(selected_repositories) <= MAX_SELECTED_REPOSITORIES:
-        st.stop()
+    if 1 <= len(selected_repositories) <= MAX_SELECTED_REPOSITORIES:
+        selected_profile = tuple(selected_repositories)
+        tabs = st.tabs(["Semantic", "Graph", "Hybrid"])
+        methods = ["semantic", "graph", "hybrid"]
 
-    selected_profile = tuple(selected_repositories)
-    tabs = st.tabs(["Semantic", "Graph", "Hybrid"])
-    methods = ["semantic", "graph", "hybrid"]
+        for tab, method in zip(tabs, methods, strict=True):
+            with tab:
+                try:
+                    start_time = time.perf_counter()
+                    recommendations = build_profile_recommendations(selected_profile, method, repositories)
+                    elapsed_time = time.perf_counter() - start_time
+                except Exception as exc:
+                    st.error(str(exc))
+                    continue
 
-    for tab, method in zip(tabs, methods, strict=True):
-        with tab:
+                st.dataframe(
+                    format_recommendations(recommendations),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+                st.caption(f"Top {TOP_RECOMMENDATIONS} results generated in {elapsed_time:.2f}s")
+
+        st.subheader("LLM Comparison (Ollama)")
+        st.caption(
+            "The local LLM is used as a baseline for comparison against the semantic, graph, "
+            "and hybrid recommenders. It receives all cleaned repositories except the selected profile."
+        )
+        compare_with_ollama = st.checkbox("Compare with local LLM (Ollama)")
+
+        if compare_with_ollama:
+            st.write(f"Model: `{OLLAMA_DEFAULT_MODEL}`")
+            st.write("Selected repositories: " + ", ".join(selected_profile))
+
             try:
-                start_time = time.perf_counter()
-                recommendations = build_profile_recommendations(selected_profile, method, repositories)
-                elapsed_time = time.perf_counter() - start_time
+                with st.spinner("Asking local Ollama model..."):
+                    result = get_ollama_baseline(selected_profile)
+            except OllamaUnavailableError as exc:
+                st.warning("Ollama is not available. Start it with: ollama serve")
             except Exception as exc:
                 st.error(str(exc))
-                continue
-
-            st.dataframe(
-                format_recommendations(recommendations),
-                use_container_width=True,
-                hide_index=True,
-            )
-            st.caption(f"Top {TOP_RECOMMENDATIONS} results generated in {elapsed_time:.2f}s")
-
-    st.subheader("LLM Comparison (Ollama)")
-    st.caption(
-        "The local LLM is used as a baseline for comparison against the semantic, graph, "
-        "and hybrid recommenders. It receives all cleaned repositories except the selected profile."
-    )
-    compare_with_ollama = st.checkbox("Compare with local LLM (Ollama)")
-
-    if compare_with_ollama:
-        st.write(f"Model: `{OLLAMA_DEFAULT_MODEL}`")
-        st.write("Selected repositories: " + ", ".join(selected_profile))
-
-        try:
-            with st.spinner("Asking local Ollama model..."):
-                result = get_ollama_baseline(selected_profile)
-        except OllamaUnavailableError as exc:
-            st.warning("Ollama is not available. Start it with: ollama serve")
-        except Exception as exc:
-            st.error(str(exc))
-        else:
-            if result.removed_selected_repositories:
-                removed = ", ".join(result.removed_selected_repositories)
-                st.warning(f"Removed selected repositories from Ollama response: {removed}")
-            if result.answer:
-                st.markdown(result.answer)
             else:
-                st.warning("Ollama did not return any valid recommendations after filtering selected repositories.")
+                if result.removed_selected_repositories:
+                    removed = ", ".join(result.removed_selected_repositories)
+                    st.warning(f"Removed selected repositories from Ollama response: {removed}")
+                if result.answer:
+                    st.markdown(result.answer)
+                else:
+                    st.warning("Ollama did not return any valid recommendations after filtering selected repositories.")
+
+    render_evaluation_section()
 
 
 if __name__ == "__main__":

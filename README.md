@@ -21,6 +21,22 @@ Dataset: https://www.kaggle.com/datasets/donbarbos/github-repos
 
 The dataset is not committed to GitHub because of its size. Download it separately and place raw files in `data/raw/`.
 
+## Evaluation Strategy
+
+This dataset does not include user interactions, ratings, clicks, saves, or manually labeled relevance judgments. Because there is no real user-level ground truth, classical Precision@K and Recall@K are difficult to apply directly in a statistically meaningful way.
+
+Earlier threshold-based evaluation treated recommendations above a semantic-similarity cutoff as relevant. That is only an approximate proxy and is biased, because the same semantic signal used by the recommender is also used to define relevance.
+
+The project will use a more appropriate evaluation setup:
+
+- Back-translation or paraphrase retrieval evaluation with `HitRate@K` and `MRR`
+- Human relevance judgments with `NDCG@5`
+- Optional LLM-based judging only as supplementary qualitative analysis
+
+### Optional / Experimental Threshold Evaluation
+
+Existing threshold-based evaluation scripts are kept for experimentation and debugging, but their results should not be interpreted as unbiased Precision@K or Recall@K scores. They are useful only as approximate internal checks until paraphrase-based retrieval tests and human relevance judgments are available.
+
 ## Kaggle Credentials
 
 Create a local `.env` file from the example:

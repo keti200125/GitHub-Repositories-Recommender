@@ -9,3 +9,5 @@ matplotlib
 plotly
 kagglehub==0.4.3
 python-dotenv
+langdetect
+deep-translator

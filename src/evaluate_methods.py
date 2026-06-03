@@ -7,12 +7,20 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from recommender import (
-    load_repositories,
-    recommend_graph,
-    recommend_hybrid,
-    recommend_semantic,
-)
+try:
+    from .recommender import (
+        load_repositories,
+        recommend_graph,
+        recommend_hybrid,
+        recommend_semantic,
+    )
+except ImportError:
+    from recommender import (
+        load_repositories,
+        recommend_graph,
+        recommend_hybrid,
+        recommend_semantic,
+    )
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

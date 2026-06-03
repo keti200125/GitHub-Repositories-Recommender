@@ -15,3 +15,5 @@ outputs/*
 *.npz
 *.csv
 *.json
+!data/evaluation/
+!data/evaluation/paraphrase_eval.csv
