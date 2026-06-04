@@ -1,0 +1,5 @@
+method,precision_at_5,recall_at_5,hit_rate_at_5,mrr
+semantic,0.96,0.48,1.0,0.975
+graph,0.46,0.23,0.9,0.7517
+hybrid,0.77,0.385,1.0,0.975
+ollama,0.07,0.035,0.25,0.225

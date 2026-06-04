@@ -1,4 +1,4 @@
-"""Back-translate paraphrase evaluation queries through Bulgarian."""
+"""Back-translate paraphrase evaluation queries through Japanese."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from deep_translator import GoogleTranslator
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 EVALUATION_PATH = PROJECT_ROOT / "data" / "evaluation" / "paraphrase_eval.csv"
 SOURCE_LANGUAGE = "en"
-PIVOT_LANGUAGE = "bg"
+PIVOT_LANGUAGE = "ja"
 OUTPUT_COLUMNS = [
     "query_repository",
     "original_description",
@@ -33,13 +33,13 @@ def validate_columns(evaluation_set: pd.DataFrame) -> None:
 
 
 def back_translate(description: str) -> str:
-    """Translate English to Bulgarian and back to English."""
-    english_to_bulgarian = GoogleTranslator(source=SOURCE_LANGUAGE, target=PIVOT_LANGUAGE)
-    bulgarian_to_english = GoogleTranslator(source=PIVOT_LANGUAGE, target=SOURCE_LANGUAGE)
+    """Translate English to Japanese and back to English."""
+    english_to_pivot = GoogleTranslator(source=SOURCE_LANGUAGE, target=PIVOT_LANGUAGE)
+    pivot_to_english = GoogleTranslator(source=PIVOT_LANGUAGE, target=SOURCE_LANGUAGE)
 
-    bulgarian_description = english_to_bulgarian.translate(description)
+    pivot_description = english_to_pivot.translate(description)
     sleep(0.2)
-    return bulgarian_to_english.translate(bulgarian_description)
+    return pivot_to_english.translate(pivot_description)
 
 
 def add_back_translated_queries(evaluation_set: pd.DataFrame) -> pd.DataFrame:
@@ -50,7 +50,18 @@ def add_back_translated_queries(evaluation_set: pd.DataFrame) -> pd.DataFrame:
     back_translated_descriptions = []
     for _, row in updated.iterrows():
         original_description = str(row["original_description"])
-        back_translated_description = back_translate(original_description)
+        try:
+            back_translated_description = back_translate(original_description)
+        except Exception as exc:
+            back_translated_description = str(row["query_description"])
+            print(f"Repository: {row['query_repository']}")
+            print(f"Original: {original_description}")
+            print(f"Translation failed: {exc}")
+            print(f"Keeping existing query description: {back_translated_description}")
+            print()
+            back_translated_descriptions.append(back_translated_description)
+            continue
+
         back_translated_descriptions.append(back_translated_description)
 
         print(f"Repository: {row['query_repository']}")

@@ -1,0 +1,5 @@
+method,average_human_score,ndcg_at_5
+semantic,2.14,0.9067
+graph,2.18,0.8778
+hybrid,2.16,0.9429
+ollama,0.7,0.8774

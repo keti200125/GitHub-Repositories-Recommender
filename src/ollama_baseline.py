@@ -6,6 +6,7 @@ import argparse
 from dataclasses import dataclass
 import json
 import re
+import socket
 import textwrap
 import urllib.error
 import urllib.request
@@ -20,11 +21,19 @@ OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 OLLAMA_GENERATE_URL = "http://localhost:11434/api/generate"
 DEFAULT_MODEL = "mistral"
 TOP_OLLAMA_RECOMMENDATIONS = 5
+MAX_OLLAMA_CANDIDATES = 15
+OLLAMA_TIMEOUT_SECONDS = 180
+OLLAMA_NUM_PREDICT = 64
 PROFILE_COLUMNS = ["Name", "Description", "Stars", "Forks"]
+RECOMMENDATION_COLUMNS = ["Name", "Description", "Stars", "Forks", "Issues"]
 
 
 class OllamaUnavailableError(RuntimeError):
     """Raised when the local Ollama server is not available."""
+
+
+class OllamaTimeoutError(RuntimeError):
+    """Raised when the local Ollama model takes too long to answer."""
 
 
 @dataclass(frozen=True)
@@ -111,13 +120,18 @@ def normalized_name(value: object) -> str:
 def select_candidate_repositories(
     repositories: pd.DataFrame,
     selected_repositories: pd.DataFrame,
+    max_candidates: int = MAX_OLLAMA_CANDIDATES,
 ) -> pd.DataFrame:
-    """Return all candidate repositories, excluding selected repositories case-insensitively."""
+    """Return a compact candidate set for the local LLM baseline."""
     selected_names = set(selected_repositories["Name"].map(normalized_name))
     repository_names = repositories["Name"].map(normalized_name)
     candidates = repositories[~repository_names.isin(selected_names)].copy()
     if candidates.empty:
         raise ValueError("No candidate repositories are available after excluding selected repositories.")
+
+    candidates["Stars"] = pd.to_numeric(candidates["Stars"], errors="coerce").fillna(0)
+    candidates["Forks"] = pd.to_numeric(candidates["Forks"], errors="coerce").fillna(0)
+    candidates = candidates.sort_values(["Stars", "Forks"], ascending=False).head(max_candidates)
 
     return candidates.loc[:, PROFILE_COLUMNS].reset_index(drop=True)
 
@@ -159,20 +173,37 @@ def generate_prompt(selected_repositories: pd.DataFrame, candidate_repositories:
             "Choose only from the provided candidate list.",
             "Do not invent repository names.",
             "Return exactly 5 repositories.",
-            "Provide a short reason for each recommendation.",
+            "Return only repository names, one per line.",
+            "Do not include explanations.",
+            f"The candidate list contains {len(candidate_repositories)} repositories.",
             "",
             "CANDIDATE REPOSITORIES:",
             "",
             candidate_text,
             "",
-            "Format your answer as a ranked list: repository name - short reason.",
+            "Format your answer as 5 lines containing only repository names.",
         ]
     )
 
 
-def call_ollama(prompt: str, model: str = DEFAULT_MODEL, url: str = OLLAMA_GENERATE_URL) -> str:
+def call_ollama(
+    prompt: str,
+    model: str = DEFAULT_MODEL,
+    url: str = OLLAMA_GENERATE_URL,
+    timeout_seconds: int = OLLAMA_TIMEOUT_SECONDS,
+) -> str:
     """Call the local Ollama generate API."""
-    payload = json.dumps({"model": model, "prompt": prompt, "stream": False}).encode("utf-8")
+    payload = json.dumps(
+        {
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "num_predict": OLLAMA_NUM_PREDICT,
+                "temperature": 0,
+            },
+        }
+    ).encode("utf-8")
     request = urllib.request.Request(
         url,
         data=payload,
@@ -181,12 +212,22 @@ def call_ollama(prompt: str, model: str = DEFAULT_MODEL, url: str = OLLAMA_GENER
     )
 
     try:
-        with urllib.request.urlopen(request, timeout=120) as response:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
             data = json.loads(response.read().decode("utf-8"))
+    except (TimeoutError, socket.timeout) as exc:
+        raise OllamaTimeoutError(
+            f"Ollama did not respond within {timeout_seconds} seconds. "
+            "Try again, use a smaller local model, or keep the LLM comparison disabled."
+        ) from exc
     except urllib.error.HTTPError as exc:
         error_body = exc.read().decode("utf-8", errors="replace")
         raise RuntimeError(f"Ollama returned HTTP {exc.code}: {error_body}") from exc
     except urllib.error.URLError as exc:
+        if isinstance(exc.reason, socket.timeout):
+            raise OllamaTimeoutError(
+                f"Ollama did not respond within {timeout_seconds} seconds. "
+                "Try again, use a smaller local model, or keep the LLM comparison disabled."
+            ) from exc
         raise OllamaUnavailableError(
             "Ollama is not running. Start it with: ollama serve"
         ) from exc
@@ -251,9 +292,28 @@ def filter_ollama_answer(
     top_k: int = TOP_OLLAMA_RECOMMENDATIONS,
 ) -> tuple[str, list[str]]:
     """Keep only valid candidate recommendations and enforce the requested Top-K size."""
+    recommendation_names, removed_names = extract_ollama_recommendation_names(
+        answer,
+        selected_repo_names,
+        candidate_repo_names,
+        top_k,
+    )
+    cleaned_answer = "\n".join(
+        f"{index}. {name}" for index, name in enumerate(recommendation_names, start=1)
+    ).strip()
+    return cleaned_answer, removed_names
+
+
+def extract_ollama_recommendation_names(
+    answer: str,
+    selected_repo_names: list[str],
+    candidate_repo_names: list[str],
+    top_k: int = TOP_OLLAMA_RECOMMENDATIONS,
+) -> tuple[list[str], list[str]]:
+    """Extract ranked repository names from an Ollama answer."""
     selected_names = {normalized_name(name): name for name in selected_repo_names}
     removed_names = set()
-    kept_recommendations = []
+    kept_recommendations: list[str] = []
     seen_candidates = set()
 
     for line in answer.splitlines():
@@ -274,16 +334,57 @@ def filter_ollama_answer(
         if normalized_candidate_name in seen_candidates:
             continue
 
-        kept_recommendations.append(strip_answer_line_prefix(line))
+        kept_recommendations.append(candidate_name)
         seen_candidates.add(normalized_candidate_name)
 
         if len(kept_recommendations) == top_k:
             break
 
-    cleaned_answer = "\n".join(
-        f"{index}. {line}" for index, line in enumerate(kept_recommendations, start=1)
-    ).strip()
-    return cleaned_answer, sorted(removed_names, key=normalized_name)
+    return kept_recommendations, sorted(removed_names, key=normalized_name)
+
+
+def recommend_ollama(
+    repo_names: list[str],
+    model: str = DEFAULT_MODEL,
+    top_k: int = TOP_OLLAMA_RECOMMENDATIONS,
+) -> pd.DataFrame:
+    """Return Ollama baseline recommendations as a ranked repository table."""
+    repositories = load_repositories()
+    selected_repositories = select_profile_repositories(repositories, repo_names)
+    candidate_repositories = select_candidate_repositories(repositories, selected_repositories)
+    prompt = generate_prompt(selected_repositories, candidate_repositories)
+    raw_answer = call_ollama(prompt, model)
+
+    canonical_names = selected_repositories["Name"].astype(str).tolist()
+    candidate_names = candidate_repositories["Name"].astype(str).tolist()
+    recommendation_names, _ = extract_ollama_recommendation_names(
+        raw_answer,
+        canonical_names,
+        candidate_names,
+        top_k,
+    )
+    # Keep automatic metrics comparable by always returning a Top-K ranked list.
+    # If the local LLM emits fewer parseable repository names, fill the remaining
+    # slots from the same candidate list it was asked to choose from.
+    seen_names = {normalized_name(name) for name in recommendation_names}
+    for candidate_name in candidate_names:
+        if len(recommendation_names) == top_k:
+            break
+        if normalized_name(candidate_name) in seen_names:
+            continue
+
+        recommendation_names.append(candidate_name)
+        seen_names.add(normalized_name(candidate_name))
+
+    recommendations = []
+    for recommendation_name in recommendation_names:
+        row = find_repository(repositories, recommendation_name)
+        recommendations.append(row)
+
+    if not recommendations:
+        return pd.DataFrame(columns=RECOMMENDATION_COLUMNS)
+
+    return pd.DataFrame(recommendations).loc[:, RECOMMENDATION_COLUMNS].reset_index(drop=True)
 
 
 def run_ollama_baseline(

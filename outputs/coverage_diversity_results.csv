@@ -1,0 +1,5 @@
+method,coverage,unique_recommended_count,total_repository_count,average_diversity
+semantic,0.088,44,500,0.5207
+graph,0.098,49,500,0.5748
+hybrid,0.094,47,500,0.5322
+ollama,0.012,6,500,0.7735

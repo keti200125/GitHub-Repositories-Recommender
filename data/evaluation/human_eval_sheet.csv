@@ -1,0 +1,201 @@
+query_repository,method,rank,recommended_repository,recommended_description,stars,forks,issues,human_relevance
+tensorflow,semantic,1,awesome-machine-learning,"A curated list of awesome Machine Learning frameworks, libraries and software.",60101,14187,1,3
+tensorflow,semantic,2,caffe,Caffe: a fast open framework for deep learning.,33558,18981,1181,3
+tensorflow,semantic,3,scikit-learn,scikit-learn: machine learning in Python,55881,24667,2240,3
+tensorflow,semantic,4,opencv,Open Source Computer Vision Library,71279,55603,2526,2
+tensorflow,semantic,5,transformers,"🤗 Transformers: State-of-the-art Machine Learning for Pytorch, TensorFlow, and JAX.",112153,22276,811,3
+tensorflow,graph,1,caffe,Caffe: a fast open framework for deep learning.,33558,18981,1181,3
+tensorflow,graph,2,gym,A toolkit for developing and comparing reinforcement learning algorithms.,32743,8589,71,2
+tensorflow,graph,3,transformers,"🤗 Transformers: State-of-the-art Machine Learning for Pytorch, TensorFlow, and JAX.",112153,22276,811,3
+tensorflow,graph,4,scikit-learn,scikit-learn: machine learning in Python,55881,24667,2240,3
+tensorflow,graph,5,faceswap,Deepfakes Software For All,47086,12647,23,2
+tensorflow,hybrid,1,caffe,Caffe: a fast open framework for deep learning.,33558,18981,1181,3
+tensorflow,hybrid,2,awesome-machine-learning,"A curated list of awesome Machine Learning frameworks, libraries and software.",60101,14187,1,3
+tensorflow,hybrid,3,scikit-learn,scikit-learn: machine learning in Python,55881,24667,2240,3
+tensorflow,hybrid,4,transformers,"🤗 Transformers: State-of-the-art Machine Learning for Pytorch, TensorFlow, and JAX.",112153,22276,811,3
+tensorflow,hybrid,5,opencv,Open Source Computer Vision Library,71279,55603,2526,2
+react,semantic,1,ionic-framework,"A powerful cross-platform UI toolkit for building native-quality iOS, Android, and Progressive Web Apps with HTML, CSS, and JavaScript.",49487,13666,430,2
+react,semantic,2,lodash,"A modern JavaScript utility library delivering modularity, performance, & extras.",57483,7086,3,2
+react,semantic,3,react-native,A framework for building native applications using React,112057,23820,1649,3
+react,semantic,4,awesome-javascript,"🐢 A collection of awesome browser-side  JavaScript libraries, resources and shiny things.",31304,4325,43,2
+react,semantic,5,angular,The modern web developer’s platform,90337,24264,1524,1
+react,graph,1,react-native,A framework for building native applications using React,112057,23820,1649,3
+react,graph,2,ant-design,An enterprise-class UI design language and React UI library,87612,41795,1015,3
+react,graph,3,Semantic-UI,Semantic is a UI component framework based around useful principles from natural language.,50763,5102,1076,2
+react,graph,4,lottie-android,"Render After Effects animations natively on Android and iOS, Web, and React Native",34238,5389,37,2
+react,graph,5,svelte,Cybernetically enhanced web apps,72642,4013,869,1
+react,hybrid,1,react-native,A framework for building native applications using React,112057,23820,1649,3
+react,hybrid,2,ant-design,An enterprise-class UI design language and React UI library,87612,41795,1015,3
+react,hybrid,3,ionic-framework,"A powerful cross-platform UI toolkit for building native-quality iOS, Android, and Progressive Web Apps with HTML, CSS, and JavaScript.",49487,13666,430,2
+react,hybrid,4,bootstrap,"The most popular HTML, CSS, and JavaScript framework for developing responsive, mobile first projects on the web.",165352,78906,477,2
+react,hybrid,5,lodash,"A modern JavaScript utility library delivering modularity, performance, & extras.",57483,7086,3,2
+vue,semantic,1,vuetify,🐉 Vue Component Framework,37958,6895,724,3
+vue,semantic,2,element,A Vue.js 2.0 UI Toolkit for Web,53678,14673,2629,3
+vue,semantic,3,awesome-vue,🎉 A curated list of awesome things related to Vue.js,69509,9447,40,3
+vue,semantic,4,uni-app,A cross-platform framework using Vue.js,38609,3556,1219,2
+vue,semantic,5,vue-element-admin,:tada: A magical vue admin                                                                https://panjiachen.github.io/vue-element-admin,84040,30201,1310,3
+vue,graph,1,vuetify,🐉 Vue Component Framework,37958,6895,724,3
+vue,graph,2,nuxt,"Nuxt is an intuitive and extendable way to create type-safe, performant and production-grade full-stack web apps and websites with Vue 3.",47504,4365,964,3
+vue,graph,3,vue-element-admin,:tada: A magical vue admin                                                                https://panjiachen.github.io/vue-element-admin,84040,30201,1310,3
+vue,graph,4,awesome-vue,🎉 A curated list of awesome things related to Vue.js,69509,9447,40,3
+vue,graph,5,element,A Vue.js 2.0 UI Toolkit for Web,53678,14673,2629,3
+vue,hybrid,1,vuetify,🐉 Vue Component Framework,37958,6895,724,3
+vue,hybrid,2,vue-element-admin,:tada: A magical vue admin                                                                https://panjiachen.github.io/vue-element-admin,84040,30201,1310,3
+vue,hybrid,3,awesome-vue,🎉 A curated list of awesome things related to Vue.js,69509,9447,40,3
+vue,hybrid,4,element,A Vue.js 2.0 UI Toolkit for Web,53678,14673,2629,3
+vue,hybrid,5,nuxt,"Nuxt is an intuitive and extendable way to create type-safe, performant and production-grade full-stack web apps and websites with Vue 3.",47504,4365,964,3
+flutter,semantic,1,awesome-flutter,"An awesome list that curates the best Flutter libraries, tools, tutorials, articles and more.",48506,6504,57,3
+flutter,semantic,2,architecture-samples,A collection of samples to discuss and showcase different architectural tools and patterns for Android apps.,43146,11580,203,1
+flutter,semantic,3,fastlane,🚀 The easiest way to automate building and releasing your iOS and Android apps,37530,5611,532,2
+flutter,semantic,4,AppFlowy,AppFlowy is an open-source alternative to Notion. You are in charge of your data and customizations. Built with Flutter and Rust.,38662,2408,558,2
+flutter,semantic,5,awesome-android-ui,A curated list of awesome Android UI/UX libraries,47384,10326,27,1
+flutter,graph,1,awesome-flutter,"An awesome list that curates the best Flutter libraries, tools, tutorials, articles and more.",48506,6504,57,3
+flutter,graph,2,AppFlowy,AppFlowy is an open-source alternative to Notion. You are in charge of your data and customizations. Built with Flutter and Rust.,38662,2408,558,2
+flutter,graph,3,awesome-android-ui,A curated list of awesome Android UI/UX libraries,47384,10326,27,1
+flutter,graph,4,fastlane,🚀 The easiest way to automate building and releasing your iOS and Android apps,37530,5611,532,2
+flutter,graph,5,open-source-ios-apps,:iphone: Collaborative List of Open-Source iOS Apps,36431,5176,2,1
+flutter,hybrid,1,awesome-flutter,"An awesome list that curates the best Flutter libraries, tools, tutorials, articles and more.",48506,6504,57,3
+flutter,hybrid,2,fastlane,🚀 The easiest way to automate building and releasing your iOS and Android apps,37530,5611,532,2
+flutter,hybrid,3,architecture-samples,A collection of samples to discuss and showcase different architectural tools and patterns for Android apps.,43146,11580,203,1
+flutter,hybrid,4,AppFlowy,AppFlowy is an open-source alternative to Notion. You are in charge of your data and customizations. Built with Flutter and Rust.,38662,2408,558,2
+flutter,hybrid,5,awesome-android-ui,A curated list of awesome Android UI/UX libraries,47384,10326,27,1
+kubernetes,semantic,1,moby,Moby Project - a collaborative project for the container ecosystem to assemble container-based systems,66680,18874,3278,3
+kubernetes,semantic,2,lazydocker,The lazier way to manage everything docker,30477,1053,113,2
+kubernetes,semantic,3,compose,Define and run multi-container applications with Docker,30520,5021,198,3
+kubernetes,semantic,4,netdata,"Monitor your servers, containers, and applications, in high-resolution and in real-time!",65126,5664,359,2
+kubernetes,semantic,5,pm2,Node.js Production Process Manager with a built-in Load Balancer.,39682,2572,829,1
+kubernetes,graph,1,lazydocker,The lazier way to manage everything docker,30477,1053,113,2
+kubernetes,graph,2,moby,Moby Project - a collaborative project for the container ecosystem to assemble container-based systems,66680,18874,3278,3
+kubernetes,graph,3,dive,A tool for exploring each layer in a docker image,38433,1538,139,2
+kubernetes,graph,4,compose,Define and run multi-container applications with Docker,30520,5021,198,3
+kubernetes,graph,5,netdata,"Monitor your servers, containers, and applications, in high-resolution and in real-time!",65126,5664,359,2
+kubernetes,hybrid,1,moby,Moby Project - a collaborative project for the container ecosystem to assemble container-based systems,66680,18874,3278,3
+kubernetes,hybrid,2,lazydocker,The lazier way to manage everything docker,30477,1053,113,2
+kubernetes,hybrid,3,compose,Define and run multi-container applications with Docker,30520,5021,198,3
+kubernetes,hybrid,4,netdata,"Monitor your servers, containers, and applications, in high-resolution and in real-time!",65126,5664,359,2
+kubernetes,hybrid,5,dive,A tool for exploring each layer in a docker image,38433,1538,139,2
+freeCodeCamp,semantic,1,freecodecamp.cn,FCC China open source codebase and curriculum. Learn to code and help nonprofits.,36528,1374,152,3
+freeCodeCamp,semantic,2,app-ideas,A Collection of application ideas which can be used to improve your coding skills.,66929,8510,348,3
+freeCodeCamp,semantic,3,project-based-learning,Curated list of project-based tutorials,116167,16175,50,3
+freeCodeCamp,semantic,4,first-contributions,🚀✨ Help beginners to contribute to open source projects,37762,65211,260,2
+freeCodeCamp,semantic,5,build-your-own-x,Master programming by recreating your favorite technologies from scratch.,217627,21159,282,3
+freeCodeCamp,graph,1,first-contributions,🚀✨ Help beginners to contribute to open source projects,37762,65211,260,2
+freeCodeCamp,graph,2,build-your-own-x,Master programming by recreating your favorite technologies from scratch.,217627,21159,282,3
+freeCodeCamp,graph,3,freecodecamp.cn,FCC China open source codebase and curriculum. Learn to code and help nonprofits.,36528,1374,152,3
+freeCodeCamp,graph,4,computer-science,:mortar_board: Path to a free self-taught education in Computer Science!,149292,19075,17,3
+freeCodeCamp,graph,5,cs-video-courses,List of Computer Science courses with video lectures.,60200,8465,4,3
+freeCodeCamp,hybrid,1,free-programming-books,:books: Freely available programming books,298393,57194,46,3
+freeCodeCamp,hybrid,2,build-your-own-x,Master programming by recreating your favorite technologies from scratch.,217627,21159,282,3
+freeCodeCamp,hybrid,3,first-contributions,🚀✨ Help beginners to contribute to open source projects,37762,65211,260,2
+freeCodeCamp,hybrid,4,freecodecamp.cn,FCC China open source codebase and curriculum. Learn to code and help nonprofits.,36528,1374,152,3
+freeCodeCamp,hybrid,5,developer-roadmap,"Interactive roadmaps, guides and other educational content to help developers grow in their careers.",251416,34927,643,3
+bootstrap,semantic,1,hugo,The world’s fastest framework for building websites.,69075,7354,642,2
+bootstrap,semantic,2,50projects50days,"50+ mini web projects using HTML, CSS & JS",30720,8108,64,2
+bootstrap,semantic,3,ionic-framework,"A powerful cross-platform UI toolkit for building native-quality iOS, Android, and Progressive Web Apps with HTML, CSS, and JavaScript.",49487,13666,430,2
+bootstrap,semantic,4,html5-boilerplate,"A professional front-end template for building fast, robust, and adaptable web apps or sites.",55252,12416,8,3
+bootstrap,semantic,5,tailwindcss,A utility-first CSS framework for rapid UI development.,72109,3753,13,3
+bootstrap,graph,1,reveal.js,The HTML Presentation Framework,64590,16687,753,1
+bootstrap,graph,2,impress.js,It's a presentation framework based on the power of CSS3 transforms and transitions in modern browsers and inspired by the idea behind prezi.com.,37327,6809,76,1
+bootstrap,graph,3,bulma,Modern CSS framework based on Flexbox,47529,3995,377,3
+bootstrap,graph,4,tailwindcss,A utility-first CSS framework for rapid UI development.,72109,3753,13,3
+bootstrap,graph,5,angular.js,AngularJS - HTML enhanced for web apps!,59090,28096,464,2
+bootstrap,hybrid,1,reveal.js,The HTML Presentation Framework,64590,16687,753,1
+bootstrap,hybrid,2,hugo,The world’s fastest framework for building websites.,69075,7354,642,2
+bootstrap,hybrid,3,50projects50days,"50+ mini web projects using HTML, CSS & JS",30720,8108,64,2
+bootstrap,hybrid,4,impress.js,It's a presentation framework based on the power of CSS3 transforms and transitions in modern browsers and inspired by the idea behind prezi.com.,37327,6809,76,1
+bootstrap,hybrid,5,tailwindcss,A utility-first CSS framework for rapid UI development.,72109,3753,13,3
+transformers,semantic,1,models,Models and examples built with TensorFlow,76105,46226,1205,3
+transformers,semantic,2,scikit-learn,scikit-learn: machine learning in Python,55881,24667,2240,2
+transformers,semantic,3,caffe,Caffe: a fast open framework for deep learning.,33558,18981,1181,2
+transformers,semantic,4,pytorch,Tensors and Dynamic neural networks in Python with strong GPU acceleration,70933,19511,12736,3
+transformers,semantic,5,annotated_deep_learning_paper_implementations,"🧑‍🏫 60 Implementations/tutorials of deep learning papers with side-by-side notes 📝; including transformers (original, xl, switch, feedback, vit, ...), optimizers (adam, adabelief, sophia, ...), gans(cyclegan, stylegan2, ...), 🎮 reinforcement learning (ppo, dqn), capsnet, distillation, ... 🧠",36179,3771,26,3
+transformers,graph,1,bert,TensorFlow code and pre-trained models for BERT,35295,9373,873,3
+transformers,graph,2,yolov5,YOLOv5 🚀 in PyTorch > ONNX > CoreML > TFLite,41715,14627,237,2
+transformers,graph,3,TensorFlow-Examples,TensorFlow Tutorial and Examples for Beginners (support TF v1 & v2),42962,15127,217,3
+transformers,graph,4,pytorch,Tensors and Dynamic neural networks in Python with strong GPU acceleration,70933,19511,12736,3
+transformers,graph,5,caffe,Caffe: a fast open framework for deep learning.,33558,18981,1181,2
+transformers,hybrid,1,models,Models and examples built with TensorFlow,76105,46226,1205,3
+transformers,hybrid,2,tensorflow,An Open Source Machine Learning Framework for Everyone,177727,88940,2066,3
+transformers,hybrid,3,pytorch,Tensors and Dynamic neural networks in Python with strong GPU acceleration,70933,19511,12736,3
+transformers,hybrid,4,caffe,Caffe: a fast open framework for deep learning.,33558,18981,1181,2
+transformers,hybrid,5,scikit-learn,scikit-learn: machine learning in Python,55881,24667,2240,2
+django,semantic,1,hugo,The world’s fastest framework for building websites.,69075,7354,642,2
+django,semantic,2,angular,The modern web developer’s platform,90337,24264,1524,1
+django,semantic,3,Front-End-Checklist,🗂 The perfect Front-End Checklist for modern websites and meticulous developers,66062,6359,2,1
+django,semantic,4,express,"Fast, unopinionated, minimalist web framework for node.",61914,11164,186,2
+django,semantic,5,html5-boilerplate,"A professional front-end template for building fast, robust, and adaptable web apps or sites.",55252,12416,8,1
+django,graph,1,html5-boilerplate,"A professional front-end template for building fast, robust, and adaptable web apps or sites.",55252,12416,8,1
+django,graph,2,50projects50days,"50+ mini web projects using HTML, CSS & JS",30720,8108,64,1
+django,graph,3,hugo,The world’s fastest framework for building websites.,69075,7354,642,2
+django,graph,4,Front-End-Checklist,🗂 The perfect Front-End Checklist for modern websites and meticulous developers,66062,6359,2,1
+django,graph,5,aspnetcore,"ASP.NET Core is a cross-platform .NET framework for building modern cloud-based web applications on Windows, Mac, or Linux.",32621,9364,2844,2
+django,hybrid,1,hugo,The world’s fastest framework for building websites.,69075,7354,642,2
+django,hybrid,2,angular,The modern web developer’s platform,90337,24264,1524,1
+django,hybrid,3,html5-boilerplate,"A professional front-end template for building fast, robust, and adaptable web apps or sites.",55252,12416,8,1
+django,hybrid,4,Front-End-Checklist,🗂 The perfect Front-End Checklist for modern websites and meticulous developers,66062,6359,2,1
+django,hybrid,5,express,"Fast, unopinionated, minimalist web framework for node.",61914,11164,186,2
+linux,semantic,1,HelloGitHub,":octocat: 分享 GitHub 上有趣、入门级的开源项目。Share interesting, entry-level open source projects on GitHub.",75465,9304,124,0
+linux,semantic,2,github-cheat-sheet,A list of cool features of Git and GitHub.,42480,5305,31,1
+linux,semantic,3,awesome-rust,A curated list of Rust code and resources.,37165,2329,10,0
+linux,semantic,4,cli,GitHub’s official command line tool,33281,5479,458,1
+linux,semantic,5,bitcoin,Bitcoin Core integration/staging tree,71444,35719,666,1
+linux,graph,1,bitcoin,Bitcoin Core integration/staging tree,71444,35719,666,1
+linux,graph,2,act,Run your GitHub Actions locally 🚀,43375,1079,176,1
+linux,graph,3,github-cheat-sheet,A list of cool features of Git and GitHub.,42480,5305,31,1
+linux,graph,4,resume.github.com,Resumes generated using the GitHub informations,60715,1426,64,0
+linux,graph,5,git,Git Source Code Mirror - This is a publish-only repository but pull requests can be turned into patches to the mailing list via GitGitGadget (https://gitgitgadget.github.io/). Please follow Documentation/SubmittingPatches procedure for any of your improvements.,47388,25461,153,2
+linux,hybrid,1,bitcoin,Bitcoin Core integration/staging tree,71444,35719,666,1
+linux,hybrid,2,996.ICU,Repo for counting stars and contributing. Press F to pay respect to glorious developers.,267901,21497,16712,0
+linux,hybrid,3,github-cheat-sheet,A list of cool features of Git and GitHub.,42480,5305,31,1
+linux,hybrid,4,gitignore,A collection of useful .gitignore templates,151549,84060,446,1
+linux,hybrid,5,freeCodeCamp,freeCodeCamp.org's open-source codebase and curriculum. Learn to code for free.,374074,33599,248,0
+tensorflow,ollama,1,freeCodeCamp,freeCodeCamp.org's open-source codebase and curriculum. Learn to code for free.,374074,33599,248,0
+tensorflow,ollama,2,free-programming-books,:books: Freely available programming books,298393,57194,46,1
+tensorflow,ollama,3,awesome,😎 Awesome lists about all kinds of interesting topics,269997,26485,61,1
+tensorflow,ollama,4,coding-interview-university,A complete computer science study plan to become a software engineer.,265161,69434,56,0
+tensorflow,ollama,5,996.ICU,Repo for counting stars and contributing. Press F to pay respect to glorious developers.,267901,21497,16712,0
+react,ollama,1,freeCodeCamp,freeCodeCamp.org's open-source codebase and curriculum. Learn to code for free.,374074,33599,248,2
+react,ollama,2,free-programming-books,:books: Freely available programming books,298393,57194,46,1
+react,ollama,3,awesome,😎 Awesome lists about all kinds of interesting topics,269997,26485,61,1
+react,ollama,4,coding-interview-university,A complete computer science study plan to become a software engineer.,265161,69434,56,0
+react,ollama,5,996.ICU,Repo for counting stars and contributing. Press F to pay respect to glorious developers.,267901,21497,16712,0
+vue,ollama,1,freeCodeCamp,freeCodeCamp.org's open-source codebase and curriculum. Learn to code for free.,374074,33599,248,2
+vue,ollama,2,free-programming-books,:books: Freely available programming books,298393,57194,46,1
+vue,ollama,3,awesome,😎 Awesome lists about all kinds of interesting topics,269997,26485,61,1
+vue,ollama,4,coding-interview-university,A complete computer science study plan to become a software engineer.,265161,69434,56,0
+vue,ollama,5,996.ICU,Repo for counting stars and contributing. Press F to pay respect to glorious developers.,267901,21497,16712,0
+flutter,ollama,1,freeCodeCamp,freeCodeCamp.org's open-source codebase and curriculum. Learn to code for free.,374074,33599,248,1
+flutter,ollama,2,free-programming-books,:books: Freely available programming books,298393,57194,46,1
+flutter,ollama,3,awesome,😎 Awesome lists about all kinds of interesting topics,269997,26485,61,1
+flutter,ollama,4,coding-interview-university,A complete computer science study plan to become a software engineer.,265161,69434,56,0
+flutter,ollama,5,996.ICU,Repo for counting stars and contributing. Press F to pay respect to glorious developers.,267901,21497,16712,0
+kubernetes,ollama,1,freeCodeCamp,freeCodeCamp.org's open-source codebase and curriculum. Learn to code for free.,374074,33599,248,0
+kubernetes,ollama,2,free-programming-books,:books: Freely available programming books,298393,57194,46,1
+kubernetes,ollama,3,awesome,😎 Awesome lists about all kinds of interesting topics,269997,26485,61,1
+kubernetes,ollama,4,coding-interview-university,A complete computer science study plan to become a software engineer.,265161,69434,56,0
+kubernetes,ollama,5,996.ICU,Repo for counting stars and contributing. Press F to pay respect to glorious developers.,267901,21497,16712,0
+freeCodeCamp,ollama,1,free-programming-books,:books: Freely available programming books,298393,57194,46,3
+freeCodeCamp,ollama,2,awesome,😎 Awesome lists about all kinds of interesting topics,269997,26485,61,2
+freeCodeCamp,ollama,3,coding-interview-university,A complete computer science study plan to become a software engineer.,265161,69434,56,2
+freeCodeCamp,ollama,4,public-apis,A collective list of free APIs,256615,29254,191,2
+freeCodeCamp,ollama,5,996.ICU,Repo for counting stars and contributing. Press F to pay respect to glorious developers.,267901,21497,16712,0
+bootstrap,ollama,1,freeCodeCamp,freeCodeCamp.org's open-source codebase and curriculum. Learn to code for free.,374074,33599,248,2
+bootstrap,ollama,2,free-programming-books,:books: Freely available programming books,298393,57194,46,1
+bootstrap,ollama,3,awesome,😎 Awesome lists about all kinds of interesting topics,269997,26485,61,1
+bootstrap,ollama,4,coding-interview-university,A complete computer science study plan to become a software engineer.,265161,69434,56,0
+bootstrap,ollama,5,996.ICU,Repo for counting stars and contributing. Press F to pay respect to glorious developers.,267901,21497,16712,0
+transformers,ollama,1,freeCodeCamp,freeCodeCamp.org's open-source codebase and curriculum. Learn to code for free.,374074,33599,248,0
+transformers,ollama,2,free-programming-books,:books: Freely available programming books,298393,57194,46,1
+transformers,ollama,3,awesome,😎 Awesome lists about all kinds of interesting topics,269997,26485,61,1
+transformers,ollama,4,coding-interview-university,A complete computer science study plan to become a software engineer.,265161,69434,56,0
+transformers,ollama,5,996.ICU,Repo for counting stars and contributing. Press F to pay respect to glorious developers.,267901,21497,16712,0
+django,ollama,1,freeCodeCamp,freeCodeCamp.org's open-source codebase and curriculum. Learn to code for free.,374074,33599,248,1
+django,ollama,2,free-programming-books,:books: Freely available programming books,298393,57194,46,1
+django,ollama,3,awesome,😎 Awesome lists about all kinds of interesting topics,269997,26485,61,1
+django,ollama,4,coding-interview-university,A complete computer science study plan to become a software engineer.,265161,69434,56,0
+django,ollama,5,996.ICU,Repo for counting stars and contributing. Press F to pay respect to glorious developers.,267901,21497,16712,0
+linux,ollama,1,freeCodeCamp,freeCodeCamp.org's open-source codebase and curriculum. Learn to code for free.,374074,33599,248,0
+linux,ollama,2,free-programming-books,:books: Freely available programming books,298393,57194,46,1
+linux,ollama,3,awesome,😎 Awesome lists about all kinds of interesting topics,269997,26485,61,1
+linux,ollama,4,coding-interview-university,A complete computer science study plan to become a software engineer.,265161,69434,56,0
+linux,ollama,5,996.ICU,Repo for counting stars and contributing. Press F to pay respect to glorious developers.,267901,21497,16712,0

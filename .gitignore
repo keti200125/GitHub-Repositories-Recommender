@@ -17,3 +17,14 @@ outputs/*
 *.json
 !data/evaluation/
 !data/evaluation/paraphrase_eval.csv
+!data/evaluation/human_eval_sheet.csv
+!outputs/case_studies.csv
+!outputs/retrieval_evaluation_details.csv
+!outputs/retrieval_evaluation_summary.csv
+!outputs/coverage_diversity_results.csv
+!outputs/human_evaluation_summary.csv
+!outputs/human_evaluation_details.csv
+!outputs/case_studies.md
+!outputs/precision_at_5.png
+!outputs/recall_at_5.png
+!outputs/mrr.png
